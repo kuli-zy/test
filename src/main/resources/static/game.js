@@ -15,6 +15,7 @@ const serverStatus = document.getElementById('serverStatus');
 
 let state = null;
 let timer = null;
+let frame = 0;
 
 async function api(path, options = {}) {
     const response = await fetch(`/api/game${path}`, {
@@ -30,21 +31,35 @@ function updateHud() {
     scoreEl.textContent = state.score;
     bestScoreEl.textContent = state.bestScore;
     levelEl.textContent = state.level;
-    statusEl.textContent = state.gameOver ? '游戏结束' : state.running ? '游戏中' : '已暂停';
+    const text = state.gameOver ? '游戏结束' : state.running ? '游戏中' : '已暂停';
+    const label = statusEl.querySelector('span');
+    if (label) label.textContent = text;
+    else statusEl.textContent = text;
+}
+
+function roundedRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
 }
 
 function draw() {
     if (!state) return;
+    frame += 1;
     const grid = state.gridSize;
     const cell = canvas.width / grid;
 
-    ctx.fillStyle = '#020617';
+    const bg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 40, canvas.width / 2, canvas.height / 2, canvas.width * .72);
+    bg.addColorStop(0, '#071426');
+    bg.addColorStop(.55, '#030916');
+    bg.addColorStop(1, '#01030a');
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
+    ctx.save();
+    ctx.strokeStyle = 'rgba(34, 211, 238, 0.075)';
     ctx.lineWidth = 1;
     for (let i = 1; i < grid; i++) {
-        const p = i * cell;
+        const p = Math.round(i * cell) + .5;
         ctx.beginPath();
         ctx.moveTo(p, 0);
         ctx.lineTo(p, canvas.height);
@@ -54,15 +69,69 @@ function draw() {
         ctx.lineTo(canvas.width, p);
         ctx.stroke();
     }
+    ctx.restore();
 
-    ctx.fillStyle = '#ef4444';
+    const fx = state.food.x * cell + cell / 2;
+    const fy = state.food.y * cell + cell / 2;
+    const pulse = 1 + Math.sin(frame * .18) * .08;
+    ctx.save();
+    ctx.shadowColor = '#ff3d71';
+    ctx.shadowBlur = 24;
+    const foodGlow = ctx.createRadialGradient(fx, fy, 2, fx, fy, cell * .6);
+    foodGlow.addColorStop(0, '#fff1f5');
+    foodGlow.addColorStop(.18, '#ff668f');
+    foodGlow.addColorStop(.48, '#ff315f');
+    foodGlow.addColorStop(1, 'rgba(255,49,95,0)');
+    ctx.fillStyle = foodGlow;
     ctx.beginPath();
-    ctx.arc(state.food.x * cell + cell / 2, state.food.y * cell + cell / 2, cell * 0.34, 0, Math.PI * 2);
+    ctx.arc(fx, fy, cell * .62 * pulse, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = '#ff4d72';
+    ctx.beginPath();
+    ctx.arc(fx, fy, cell * .28 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
     state.snake.forEach((segment, index) => {
-        ctx.fillStyle = index === 0 ? '#4ade80' : '#22c55e';
-        ctx.fillRect(segment.x * cell + 2, segment.y * cell + 2, cell - 4, cell - 4);
+        const x = segment.x * cell + 2.5;
+        const y = segment.y * cell + 2.5;
+        const size = cell - 5;
+        const head = index === 0;
+        ctx.save();
+        ctx.shadowColor = head ? '#7dffb2' : '#21f58a';
+        ctx.shadowBlur = head ? 22 : 12;
+        const grad = ctx.createLinearGradient(x, y, x + size, y + size);
+        if (head) {
+            grad.addColorStop(0, '#b8ffd0');
+            grad.addColorStop(.45, '#52ff9a');
+            grad.addColorStop(1, '#13c96d');
+        } else {
+            grad.addColorStop(0, '#39ff88');
+            grad.addColorStop(1, '#0bbd68');
+        }
+        ctx.fillStyle = grad;
+        roundedRect(x, y, size, size, head ? 7 : 5);
+        ctx.fill();
+
+        ctx.strokeStyle = head ? 'rgba(220,255,234,.78)' : 'rgba(180,255,212,.25)';
+        ctx.lineWidth = 1;
+        roundedRect(x + .5, y + .5, size - 1, size - 1, head ? 7 : 5);
+        ctx.stroke();
+
+        if (head) {
+            const d = state.direction;
+            const eyes = d === 'left' || d === 'right'
+                ? [{x: d === 'right' ? .67 : .33, y: .32}, {x: d === 'right' ? .67 : .33, y: .68}]
+                : [{x: .32, y: d === 'down' ? .67 : .33}, {x: .68, y: d === 'down' ? .67 : .33}];
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#03120a';
+            eyes.forEach(eye => {
+                ctx.beginPath();
+                ctx.arc(x + size * eye.x, y + size * eye.y, Math.max(1.4, cell * .065), 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        ctx.restore();
     });
 }
 
@@ -72,14 +141,15 @@ function render() {
 
     if (state.gameOver) {
         overlay.classList.remove('hidden');
-        overlayTitle.textContent = '游戏结束';
-        overlayText.textContent = `本局得分 ${state.score}，点击重新开始。`;
-        overlayButton.textContent = '再来一局';
+        overlayTitle.textContent = 'GAME OVER';
+        overlayText.textContent = `本局得分 ${state.score}，重新启动系统再来一局。`;
+        overlayButton.querySelector('span') ? overlayButton.querySelector('span').textContent = '重新启动' : overlayButton.textContent = '重新启动';
     } else if (!state.running) {
         overlay.classList.remove('hidden');
-        overlayTitle.textContent = state.score === 0 ? '准备好了吗？' : '游戏暂停';
+        overlayTitle.textContent = state.score === 0 ? 'READY PLAYER?' : 'SYSTEM PAUSED';
         overlayText.textContent = state.score === 0 ? '方向键 / WASD 控制，空格暂停。' : '点击继续或按空格恢复。';
-        overlayButton.textContent = state.score === 0 ? '开始游戏' : '继续游戏';
+        const text = state.score === 0 ? '进入游戏' : '继续游戏';
+        overlayButton.querySelector('span') ? overlayButton.querySelector('span').textContent = text : overlayButton.textContent = text;
     } else {
         overlay.classList.add('hidden');
     }
@@ -130,9 +200,7 @@ async function move(direction) {
         body: JSON.stringify({direction})
     });
     render();
-    if (!state.running && !state.gameOver) {
-        await startGame();
-    }
+    if (!state.running && !state.gameOver) await startGame();
 }
 
 function handleKey(event) {
@@ -143,7 +211,6 @@ function handleKey(event) {
         arrowleft: 'left', a: 'left',
         arrowright: 'right', d: 'right'
     };
-
     if (controls[key]) {
         event.preventDefault();
         move(controls[key]);
@@ -158,20 +225,19 @@ overlayButton.addEventListener('click', () => state?.gameOver ? restartGame() : 
 startButton.addEventListener('click', startGame);
 pauseButton.addEventListener('click', pauseGame);
 restartButton.addEventListener('click', restartGame);
-
-document.querySelectorAll('[data-direction]').forEach(button => {
-    button.addEventListener('click', () => move(button.dataset.direction));
-});
+document.querySelectorAll('[data-direction]').forEach(button => button.addEventListener('click', () => move(button.dataset.direction)));
 
 (async function init() {
     try {
         const info = await api('/info');
         state = await api('/state');
-        serverStatus.textContent = `${info.name} 服务已连接`;
-        statusEl.textContent = '准备开始';
+        serverStatus.textContent = `${info.name} · 服务已连接`;
+        const label = statusEl.querySelector('span');
+        if (label) label.textContent = '准备开始';
         render();
     } catch (error) {
         serverStatus.textContent = 'Spring Boot 服务连接失败';
-        statusEl.textContent = '服务不可用';
+        const label = statusEl.querySelector('span');
+        if (label) label.textContent = '服务不可用';
     }
 })();
