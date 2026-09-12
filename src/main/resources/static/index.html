@@ -3,82 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#050816">
-    <title>NEON SNAKE · Spring Boot</title>
+    <title>Spring Boot 贪吃蛇</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<div class="ambient ambient-one"></div>
-<div class="ambient ambient-two"></div>
-<div class="scanlines"></div>
-
 <main class="app-shell">
     <section class="game-card">
         <header class="topbar">
-            <div class="brand">
-                <div class="brand-mark" aria-hidden="true">S</div>
-                <div>
-                    <div class="eyebrow">JAVA ARCADE SYSTEM</div>
-                    <h1>NEON <span>SNAKE</span></h1>
-                    <p>Spring Boot 驱动的赛博贪吃蛇</p>
-                </div>
+            <div>
+                <h1>贪吃蛇</h1>
+                <p>Spring Boot + JavaScript</p>
             </div>
-            <div class="status-pill" id="status"><i></i><span>准备开始</span></div>
+            <div class="status-pill" id="status">准备开始</div>
         </header>
 
         <section class="scoreboard">
-            <div class="stat-card score-card">
-                <span>当前得分</span>
-                <strong id="score">0</strong>
-                <small>SCORE</small>
-            </div>
-            <div class="stat-card best-card">
-                <span>最高纪录</span>
-                <strong id="bestScore">0</strong>
-                <small>BEST</small>
-            </div>
-            <div class="stat-card level-card">
-                <span>当前等级</span>
-                <strong id="level">1</strong>
-                <small>LEVEL</small>
-            </div>
+            <div><span>得分</span><strong id="score">0</strong></div>
+            <div><span>最高分</span><strong id="bestScore">0</strong></div>
+            <div><span>等级</span><strong id="level">1</strong></div>
         </section>
 
-        <section class="game-zone">
-            <div class="corner corner-tl"></div>
-            <div class="corner corner-tr"></div>
-            <div class="corner corner-bl"></div>
-            <div class="corner corner-br"></div>
-
-            <div class="canvas-wrap">
-                <div class="grid-glow"></div>
-                <canvas id="gameCanvas" width="480" height="480" aria-label="贪吃蛇游戏区域"></canvas>
-                <div class="overlay" id="overlay">
-                    <div class="overlay-content">
-                        <div class="overlay-icon">◈</div>
-                        <div class="overlay-label">SYSTEM MESSAGE</div>
-                        <h2 id="overlayTitle">准备好了吗？</h2>
-                        <p id="overlayText">方向键 / WASD 控制，空格暂停。</p>
-                        <button class="primary-cta" id="overlayButton" type="button"><span>开始游戏</span></button>
-                    </div>
+        <div class="canvas-wrap">
+            <canvas id="gameCanvas" width="480" height="480" aria-label="贪吃蛇游戏区域"></canvas>
+            <div class="overlay" id="overlay">
+                <div class="overlay-content">
+                    <h2 id="overlayTitle">准备好了吗？</h2>
+                    <p id="overlayText">方向键 / WASD 控制，空格暂停。</p>
+                    <button id="overlayButton" type="button">开始游戏</button>
                 </div>
             </div>
-
-            <div class="game-meta">
-                <span><i class="dot"></i> SERVER ONLINE</span>
-                <span>GRID 24 × 24</span>
-                <span>JAVA 17</span>
-            </div>
-        </section>
+        </div>
 
         <section class="actions">
-            <button class="action-primary" id="startButton" type="button"><span class="button-icon">▶</span> 开始 / 继续</button>
-            <button class="action-warn" id="pauseButton" type="button"><span class="button-icon">Ⅱ</span> 暂停</button>
-            <button class="action-ghost" id="restartButton" type="button"><span class="button-icon">↻</span> 重新开始</button>
+            <button id="startButton" type="button">开始 / 继续</button>
+            <button id="pauseButton" type="button">暂停</button>
+            <button id="restartButton" type="button">重新开始</button>
         </section>
 
         <section class="mobile-controls" aria-label="触屏方向控制">
-            <div class="control-label">TOUCH CONTROL</div>
             <button data-direction="up" aria-label="向上">▲</button>
             <div>
                 <button data-direction="left" aria-label="向左">◀</button>
@@ -88,8 +50,8 @@
         </section>
 
         <footer>
-            <span class="tip"><b>规则</b> 吃到能量核心 +10 分，每 50 分升级并加速。</span>
-            <span class="server-status" id="serverStatus">正在连接 Spring Boot...</span>
+            <span>吃到食物 +10 分，每 50 分提升一级并加速。</span>
+            <span id="serverStatus">正在连接 Spring Boot...</span>
         </footer>
     </section>
 </main>
