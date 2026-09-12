@@ -1,6 +1,7 @@
 package com.example.snake.game;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.annotation.SessionScope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Locale;
 import java.util.Random;
 
 @Service
+@SessionScope
 public class SnakeGameService {
 
     public static final int GRID_SIZE = 24;
