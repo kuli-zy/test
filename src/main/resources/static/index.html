@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spring Boot 贪吃蛇</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<main class="app-shell">
+    <section class="game-card">
+        <header class="topbar">
+            <div>
+                <h1>贪吃蛇</h1>
+                <p>Spring Boot + JavaScript</p>
+            </div>
+            <div class="status-pill" id="status">准备开始</div>
+        </header>
+
+        <section class="scoreboard">
+            <div><span>得分</span><strong id="score">0</strong></div>
+            <div><span>最高分</span><strong id="bestScore">0</strong></div>
+            <div><span>等级</span><strong id="level">1</strong></div>
+        </section>
+
+        <div class="canvas-wrap">
+            <canvas id="gameCanvas" width="480" height="480" aria-label="贪吃蛇游戏区域"></canvas>
+            <div class="overlay" id="overlay">
+                <div class="overlay-content">
+                    <h2 id="overlayTitle">准备好了吗？</h2>
+                    <p id="overlayText">方向键 / WASD 控制，空格暂停。</p>
+                    <button id="overlayButton" type="button">开始游戏</button>
+                </div>
+            </div>
+        </div>
+
+        <section class="actions">
+            <button id="startButton" type="button">开始 / 继续</button>
+            <button id="pauseButton" type="button">暂停</button>
+            <button id="restartButton" type="button">重新开始</button>
+        </section>
+
+        <section class="mobile-controls" aria-label="触屏方向控制">
+            <button data-direction="up" aria-label="向上">▲</button>
+            <div>
+                <button data-direction="left" aria-label="向左">◀</button>
+                <button data-direction="down" aria-label="向下">▼</button>
+                <button data-direction="right" aria-label="向右">▶</button>
+            </div>
+        </section>
+
+        <footer>
+            <span>吃到食物 +10 分，每 50 分提升一级并加速。</span>
+            <span id="serverStatus">正在连接 Spring Boot...</span>
+        </footer>
+    </section>
+</main>
+<script src="/game.js"></script>
+</body>
+</html>
