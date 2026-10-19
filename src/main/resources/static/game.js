@@ -30,7 +30,23 @@ function updateHud() {
     scoreEl.textContent = state.score;
     bestScoreEl.textContent = state.bestScore;
     levelEl.textContent = state.level;
-    statusEl.textContent = state.gameOver ? '游戏结束' : state.running ? '游戏中' : '已暂停';
+
+    const mode = state.gameOver ? 'over' : state.running ? 'running' : state.score > 0 ? 'paused' : 'ready';
+    statusEl.dataset.state = mode;
+    statusEl.textContent = {
+        over: '游戏结束',
+        running: '游戏中',
+        paused: '已暂停',
+        ready: '准备开始'
+    }[mode];
+
+    startButton.disabled = state.running;
+    pauseButton.disabled = !state.running;
+}
+
+function roundRect(x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height, Math.min(radius, width / 2, height / 2));
 }
 
 function draw() {
@@ -38,31 +54,67 @@ function draw() {
     const grid = state.gridSize;
     const cell = canvas.width / grid;
 
-    ctx.fillStyle = '#020617';
+    ctx.fillStyle = '#081321';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
+    ctx.strokeStyle = 'rgba(120, 175, 187, 0.065)';
     ctx.lineWidth = 1;
     for (let i = 1; i < grid; i++) {
-        const p = i * cell;
+        const p = i * cell + .5;
         ctx.beginPath();
         ctx.moveTo(p, 0);
         ctx.lineTo(p, canvas.height);
-        ctx.stroke();
-        ctx.beginPath();
         ctx.moveTo(0, p);
         ctx.lineTo(canvas.width, p);
         ctx.stroke();
     }
 
-    ctx.fillStyle = '#ef4444';
-    ctx.beginPath();
-    ctx.arc(state.food.x * cell + cell / 2, state.food.y * cell + cell / 2, cell * 0.34, 0, Math.PI * 2);
-    ctx.fill();
+    if (state.food) {
+        const fx = state.food.x * cell + cell / 2;
+        const fy = state.food.y * cell + cell / 2;
+        ctx.save();
+        ctx.shadowColor = 'rgba(255, 117, 149, .72)';
+        ctx.shadowBlur = cell * .9;
+        ctx.fillStyle = '#ff7595';
+        ctx.beginPath();
+        ctx.arc(fx, fy, cell * .32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        ctx.fillStyle = 'rgba(255, 235, 243, .9)';
+        ctx.beginPath();
+        ctx.arc(fx - cell * .09, fy - cell * .1, cell * .08, 0, Math.PI * 2);
+        ctx.fill();
+    }
 
     state.snake.forEach((segment, index) => {
-        ctx.fillStyle = index === 0 ? '#4ade80' : '#22c55e';
-        ctx.fillRect(segment.x * cell + 2, segment.y * cell + 2, cell - 4, cell - 4);
+        const inset = index === 0 ? 1.2 : 1.6;
+        const x = segment.x * cell + inset;
+        const y = segment.y * cell + inset;
+        const size = cell - inset * 2;
+        ctx.fillStyle = index === 0 ? '#78fbd0' : (index % 2 ? '#36cfa1' : '#46dfaf');
+        if (index === 0) {
+            ctx.save();
+            ctx.shadowColor = 'rgba(69, 225, 176, .55)';
+            ctx.shadowBlur = 12;
+        }
+        roundRect(x, y, size, size, cell * .27);
+        ctx.fill();
+        if (index === 0) {
+            ctx.restore();
+            ctx.fillStyle = '#0a3934';
+            const facing = state.direction;
+            const offsets = {
+                up: [[.32, .3], [.68, .3]],
+                down: [[.32, .7], [.68, .7]],
+                left: [[.3, .32], [.3, .68]],
+                right: [[.7, .32], [.7, .68]]
+            };
+            for (const [ex, ey] of (offsets[facing] || offsets.right)) {
+                ctx.beginPath();
+                ctx.arc(segment.x * cell + cell * ex, segment.y * cell + cell * ey, cell * .065, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
     });
 }
 
@@ -173,5 +225,9 @@ document.querySelectorAll('[data-direction]').forEach(button => {
     } catch (error) {
         serverStatus.textContent = 'Spring Boot 服务连接失败';
         statusEl.textContent = '服务不可用';
+        statusEl.dataset.state = 'offline';
+        startButton.disabled = true;
+        pauseButton.disabled = true;
+        restartButton.disabled = true;
     }
 })();
