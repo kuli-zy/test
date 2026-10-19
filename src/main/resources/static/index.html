@@ -2,59 +2,118 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Spring Boot 贪吃蛇</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080f1c">
+    <meta name="description" content="经典贪吃蛇小游戏，由 Spring Boot 驱动游戏逻辑。">
+    <title>贪吃蛇 · SNAKE ARCADE</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <main class="app-shell">
-    <section class="game-card">
+    <section class="game-card" aria-label="贪吃蛇游戏">
         <header class="topbar">
-            <div>
-                <h1>贪吃蛇</h1>
-                <p>Spring Boot + JavaScript</p>
-            </div>
-            <div class="status-pill" id="status">准备开始</div>
-        </header>
-
-        <section class="scoreboard">
-            <div><span>得分</span><strong id="score">0</strong></div>
-            <div><span>最高分</span><strong id="bestScore">0</strong></div>
-            <div><span>等级</span><strong id="level">1</strong></div>
-        </section>
-
-        <div class="canvas-wrap">
-            <canvas id="gameCanvas" width="480" height="480" aria-label="贪吃蛇游戏区域"></canvas>
-            <div class="overlay" id="overlay">
-                <div class="overlay-content">
-                    <h2 id="overlayTitle">准备好了吗？</h2>
-                    <p id="overlayText">方向键 / WASD 控制，空格暂停。</p>
-                    <button id="overlayButton" type="button">开始游戏</button>
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                <div>
+                    <p class="eyebrow">SPRING BOOT · ARCADE</p>
+                    <h1>贪吃蛇 <span>SNAKE</span></h1>
+                    <p class="subtitle">经典玩法，刷新你的最高分。</p>
                 </div>
             </div>
-        </div>
+            <div class="status-pill" id="status" role="status" aria-live="polite">准备开始</div>
+        </header>
 
-        <section class="actions">
-            <button id="startButton" type="button">开始 / 继续</button>
-            <button id="pauseButton" type="button">暂停</button>
-            <button id="restartButton" type="button">重新开始</button>
-        </section>
-
-        <section class="mobile-controls" aria-label="触屏方向控制">
-            <button data-direction="up" aria-label="向上">▲</button>
-            <div>
-                <button data-direction="left" aria-label="向左">◀</button>
-                <button data-direction="down" aria-label="向下">▼</button>
-                <button data-direction="right" aria-label="向右">▶</button>
+        <section class="scoreboard" aria-label="游戏成绩">
+            <div class="stat-card stat-card-primary">
+                <span class="stat-label">当前得分 <small>SCORE</small></span>
+                <strong id="score">0</strong>
+                <span class="stat-hint">每吃到食物 +10</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">最高纪录 <small>BEST</small></span>
+                <strong id="bestScore">0</strong>
+                <span class="stat-hint">挑战新的纪录</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">当前等级 <small>LEVEL</small></span>
+                <strong id="level">1</strong>
+                <span class="stat-hint">每 50 分升级</span>
             </div>
         </section>
 
-        <footer>
-            <span>吃到食物 +10 分，每 50 分提升一级并加速。</span>
-            <span id="serverStatus">正在连接 Spring Boot...</span>
+        <div class="game-stage">
+            <section class="board-panel" aria-label="游戏区域">
+                <div class="board-toolbar">
+                    <div class="board-name"><span class="live-marker" aria-hidden="true"></span>游戏棋盘 <span class="board-id">/ FIELD 01</span></div>
+                    <span class="board-size">24 × 24 GRID</span>
+                </div>
+                <div class="canvas-wrap">
+                    <canvas id="gameCanvas" width="480" height="480" aria-label="贪吃蛇游戏棋盘"></canvas>
+                    <div class="overlay" id="overlay">
+                        <div class="overlay-content">
+                            <span class="overlay-eyebrow">SNAKE ARCADE</span>
+                            <h2 id="overlayTitle">准备好了吗？</h2>
+                            <p id="overlayText">方向键 / WASD 控制，空格暂停。</p>
+                            <button class="button button-primary overlay-button" id="overlayButton" type="button">开始游戏</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="board-legend">
+                    <div class="legend-items">
+                        <span><i class="legend-dot legend-snake" aria-hidden="true"></i>蛇身</span>
+                        <span><i class="legend-dot legend-food" aria-hidden="true"></i>食物</span>
+                    </div>
+                    <span class="board-tip">保持移动，别碰到边界</span>
+                </div>
+            </section>
+
+            <aside class="side-panel" aria-label="游戏操作与说明">
+                <section class="control-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="eyebrow">GAME CONTROL</span>
+                            <h2>游戏控制</h2>
+                        </div>
+                        <span class="panel-icon" aria-hidden="true">⌘</span>
+                    </div>
+                    <div class="actions">
+                        <button class="button button-primary" id="startButton" type="button"><span aria-hidden="true">▶</span> 开始 / 继续</button>
+                        <button class="button button-secondary" id="pauseButton" type="button"><span aria-hidden="true">Ⅱ</span> 暂停游戏</button>
+                        <button class="button button-ghost" id="restartButton" type="button"><span aria-hidden="true">↻</span> 重新开始</button>
+                    </div>
+                    <p class="control-note">控制方向，收集食物，尽可能生存更久。</p>
+                </section>
+
+                <section class="guide-panel" aria-label="键盘操作说明">
+                    <div class="guide-heading">
+                        <h2>操作指南</h2>
+                        <span>HOW TO PLAY</span>
+                    </div>
+                    <div class="guide-row"><span>移动方向</span><div class="key-group"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></div></div>
+                    <div class="guide-row"><span>备用按键</span><div class="key-group"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div></div>
+                    <div class="guide-row"><span>暂停 / 继续</span><kbd class="key-space">SPACE</kbd></div>
+                </section>
+
+                <section class="mobile-controls" aria-label="触屏方向控制">
+                    <div class="guide-heading"><h2>触屏控制</h2><span>D-PAD</span></div>
+                    <div class="dpad" role="group" aria-label="方向键">
+                        <button class="dpad-up" data-direction="up" type="button" aria-label="向上">↑</button>
+                        <button class="dpad-left" data-direction="left" type="button" aria-label="向左">←</button>
+                        <button class="dpad-down" data-direction="down" type="button" aria-label="向下">↓</button>
+                        <button class="dpad-right" data-direction="right" type="button" aria-label="向右">→</button>
+                    </div>
+                </section>
+
+                <div class="level-tip"><span class="tip-symbol" aria-hidden="true">✦</span><p><strong>升级提示</strong>每获得 50 分，蛇的速度就会提升。</p></div>
+            </aside>
+        </div>
+
+        <footer class="app-footer">
+            <span>POWERED BY JAVA · SPRING BOOT</span>
+            <span id="serverStatus" role="status" aria-live="polite">正在连接 Spring Boot...</span>
         </footer>
     </section>
 </main>
-<script src="/game.js"></script>
+<script src="/game.js" defer></script>
 </body>
 </html>
